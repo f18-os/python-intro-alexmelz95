@@ -15,7 +15,7 @@ elif rc == 0:                   # child
     os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
     args = []
     while len(args) == 0:
-        command = raw_input("prompt>")
+        command = input("prompt> ")
         args = command.split();
 
     for dir in re.split(":", os.environ['PATH']): # try each directory in the path
