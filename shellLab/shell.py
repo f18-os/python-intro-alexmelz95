@@ -14,7 +14,7 @@ if rc < 0:
 elif rc == 0:                   # child
     command = raw_input("prompt>")
     command = command.split();
-    os.write(1, (command).encode())
+    print(command)
     os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
     time.sleep(1)               # block for 1 second
     os.write(1, "Child   ....terminating now with exit code 0\n".encode())
