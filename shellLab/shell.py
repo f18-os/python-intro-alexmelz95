@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import os, sys, time, re
+import os, sys, re
 
 pid = os.getpid()
 
@@ -18,15 +18,13 @@ elif rc == 0:                   # child
         command = raw_input("prompt>")
         args = command.split();
 
-    # for dir in re.split(":", os.environ['PATH']): # try each directory in the path
-    #     program = "%s/%s" % (dir, args[0])
-    #     os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
-    #     try:
-    #         os.execve(program, args, os.environ) # try to exec program
-    #     except FileNotFoundError:             # ...expected
-    #         pass                              # ...fail quietly
-
-    print(args)
+    for dir in re.split(":", os.environ['PATH']): # try each directory in the path
+        program = "%s/%s" % (dir, args[0])
+        os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
+        try:
+            os.execve(program, args, os.environ) # try to exec program
+        except FileNotFoundError:             # ...expected
+            pass                              # ...fail quietly
 
     os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
     sys.exit(1)
