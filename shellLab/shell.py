@@ -18,6 +18,16 @@ elif rc == 0:                   # child
         command = input("prompt> ")
         args = command.split();
 
+    outputFile = ""
+    for i in range(len(args)):
+        if args[i] == ">":
+            outputFile = args[i+1]
+            os.close(1)                 # redirect child's stdout
+            sys.stdout = open("p4-output.txt", "w")
+            fd = sys.stdout.fileno() # os.open("p4-output.txt", os.O_CREAT)
+            os.set_inheritable(fd, True)
+            os.write(2, ("Child: opened fd=%d for writing\n" % fd).encode())
+
     for dir in re.split(":", os.environ['PATH']): # try each directory in the path
         program = "%s/%s" % (dir, args[0])
         os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
