@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import os, sys, time
+import os, sys, time, re
 
 pid = os.getpid()
 
@@ -12,13 +12,23 @@ if rc < 0:
     os.write(2, ("fork failed, returning %d\n" % rc).encode())
     sys.exit(1)
 elif rc == 0:                   # child
-    command = raw_input("prompt>")
-    command = command.split();
-    os.write(1, (command[0] + "\n").encode())
     os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
-    time.sleep(1)               # block for 1 second
-    os.write(1, "Child   ....terminating now with exit code 0\n".encode())
-    sys.exit(0)
+    args = []
+    while args.length == 0:
+        command = raw_input("prompt>")
+        args = command.split();
+
+    for dir in re.split(":", os.environ['PATH']): # try each directory in the path
+        program = "%s/%s" % (dir, args[0])
+        os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
+        try:
+            os.execve(program, args, os.environ) # try to exec program
+        except FileNotFoundError:             # ...expected
+            pass                              # ...fail quietly
+
+    os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
+    sys.exit(1)
+    # os.write(1, (command[0] + "\n").encode())
 else:                           # parent (forked ok)
     os.write(1, ("I am parent.  My pid=%d.  Child's pid=%d\n" % (pid, rc)).encode())
     childPidCode = os.wait()
