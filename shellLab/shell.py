@@ -14,7 +14,7 @@ if rc < 0:
 elif rc == 0:                   # child
     os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
     args = []
-    while args.size == 0:
+    while len(size) == 0:
         command = raw_input("prompt>")
         args = command.split();
 
