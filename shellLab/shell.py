@@ -16,5 +16,11 @@ elif rc == 0:                   # child
     command = command.split();
     os.write(1, (command).encode())
     os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
+    time.sleep(1)               # block for 1 second
+    os.write(1, "Child   ....terminating now with exit code 0\n".encode())
+    sys.exit(0)
 else:                           # parent (forked ok)
     os.write(1, ("I am parent.  My pid=%d.  Child's pid=%d\n" % (pid, rc)).encode())
+    childPidCode = os.wait()
+    os.write(1, ("Parent: Child %d terminated with exit code %d\n" %
+                 childPidCode).encode())
