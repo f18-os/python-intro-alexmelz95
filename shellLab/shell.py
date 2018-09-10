@@ -13,8 +13,8 @@ if rc < 0:
     sys.exit(1)
 elif rc == 0:                   # child
     os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
-    exit = false
-    while(exit):
+    exit = 0
+    while(exit == 0):
         args = []
         while len(args) == 0:
             command = input("prompt> ")
