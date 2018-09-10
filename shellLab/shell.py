@@ -23,7 +23,7 @@ elif rc == 0:                   # child
         if args[i] == ">":
             outputFile = args[i+1]
             os.close(1)                 # redirect child's stdout
-            sys.stdout = open("p4-output.txt", "w")
+            sys.stdout = open(outputFile, "w+")
             fd = sys.stdout.fileno() # os.open("p4-output.txt", os.O_CREAT)
             os.set_inheritable(fd, True)
             os.write(2, ("Child: opened fd=%d for writing\n" % fd).encode())
