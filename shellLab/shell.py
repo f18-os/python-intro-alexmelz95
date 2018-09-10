@@ -27,13 +27,13 @@ elif rc == 0:                   # child
             fd = sys.stdout.fileno() # os.open("p4-output.txt", os.O_CREAT)
             os.set_inheritable(fd, True)
             os.write(2, ("Child: opened fd=%d for writing\n" % fd).encode())
-            args = args[:i] 
+            args2 = args[:i]
 
     for dir in re.split(":", os.environ['PATH']): # try each directory in the path
-        program = "%s/%s" % (dir, args[0])
+        program = "%s/%s" % (dir, args2[0])
         os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
         try:
-            os.execve(program, args, os.environ) # try to exec program
+            os.execve(program, args2, os.environ) # try to exec program
         except FileNotFoundError:             # ...expected
             pass                              # ...fail quietly
 
