@@ -35,7 +35,7 @@ elif rc == 0:                   # child
             try:
                 inputFile = open(inputFile, "r")
             except FileNotFoundError:
-                os.write(1, ("Error: %s not found\n" % inputFile).encode())
+                os.write(2, ("Error: %s not found\n" % inputFile).encode())
                 os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
                 sys.exit(1)
             inputText = inputFile.read()
