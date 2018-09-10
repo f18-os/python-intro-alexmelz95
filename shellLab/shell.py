@@ -20,6 +20,7 @@ elif rc == 0:                   # child
         args = command.split()
 
     outputFile = ""
+    inputFile = ""
     for i in range(len(args)):
         if args[i] == ">":
             outputFile = args[i+1]
@@ -29,6 +30,13 @@ elif rc == 0:                   # child
             os.set_inheritable(fd, True)
             os.write(2, ("Child: opened fd=%d for writing\n" % fd).encode())
             args2 = args[:i]
+        if args[i] == "<":
+            inputFile = args[i+1]
+            inputFile = open(inputFile, "r")
+            inputText = inputFile.read()
+            inputFile.close()
+            arrayInputText = inputText.split()
+            args2 = args[:i] + arrayInputText
 
     if len(args2) == 0:
         args2 = args
