@@ -20,7 +20,7 @@ elif rc == 0:                   # child
             command = input("prompt> ")
             args = command.split()
 
-        if args[0] == "kill"
+        if args[0] == "kill":
             sys.exit(0)
 
         outputFile = ""
