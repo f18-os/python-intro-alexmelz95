@@ -14,6 +14,7 @@ if rc < 0:
 elif rc == 0:                   # child
     os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
     args = []
+    args2 = []
     while len(args) == 0:
         command = input("prompt> ")
         args = command.split()
@@ -28,6 +29,9 @@ elif rc == 0:                   # child
             os.set_inheritable(fd, True)
             os.write(2, ("Child: opened fd=%d for writing\n" % fd).encode())
             args2 = args[:i]
+
+    if len(args2) == 0:
+        args2 = args
 
     for dir in re.split(":", os.environ['PATH']): # try each directory in the path
         program = "%s/%s" % (dir, args2[0])
