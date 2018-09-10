@@ -32,7 +32,11 @@ elif rc == 0:                   # child
             args2 = args[:i]
         if args[i] == "<":
             inputFile = args[i+1]
-            inputFile = open(inputFile, "r")
+            try:
+                inputFile = open(inputFile, "r")
+            except FileNotFoundError:
+                os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
+                sys.exit(1)
             inputText = inputFile.read()
             inputFile.close()
             arrayInputText = inputText.split()
