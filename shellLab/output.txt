@@ -1,0 +1,5 @@
+Child:  ...trying to exec /usr/local/sbin/wc
+Child:  ...trying to exec /usr/local/bin/wc
+Child:  ...trying to exec /usr/sbin/wc
+Child:  ...trying to exec /usr/bin/wc
+  68  256 2614 shell.py
