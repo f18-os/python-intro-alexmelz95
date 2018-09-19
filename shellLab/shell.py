@@ -1,36 +1,41 @@
 #! /usr/bin/env python3
 
 import os, sys, re, signal, subprocess
+
 exit = 0
-# piping = False
-# pipeCounter = 0
-# pipeCommands = []
+piping = False
+path = ""
+pipeCommands = []
+
 while(exit == 0):
     args = []
     sleep = False
 
-
-    # if piping == True and pipeCounter == len(pipeCommands):
-    #     piping = False
-    #     pipeCounter = 0
-    #     pipeCommands = []
-
-    # if piping == False:
+    if piping == False:
         command = ""
+        prompt = ""
+        if 'PS1' in os.environ:
+            prompt = os.environ[('PS1')]
+        else:
+            prompt = "prompt>$ "
         while len(command) == 0:
-            command = input("prompt>$ ")
+            command = input(prompt)
             if command == "murder":
                 sys.exit(0)
-        if "|" in command:
-            pipeCommands = command.split("|")
-            piping = True
-        else:
-            args = command.split()
-    #
-    # if piping == True:
-    #     if pipeCounter < len(pipeCommands):
-    #         args = pipeCommands[pipeCounter].split()
-    #         pipeCounter += 1
+            if "|" in command:
+                piping = True
+                pipeCommands = command.split()
+            else:
+                args = command.split()
+            tmp_sysin = os.dup(sys.stdin.fileno())
+            tmp_sysout = os.dup(sys.stdout.fileno())
+
+    if piping == True:
+        i = 0
+        while i != len(pipeCommands) and pipeCommands[i] != "|":
+            args.append(pipeCommands[i])
+            i+=1
+        pipeCommands = pipeCommands[i+1:]
 
     pid = os.getpid()
 
@@ -48,33 +53,41 @@ while(exit == 0):
             newdir = args[1]
         os.chdir(newdir)
 
-    elif args[len(args)-1] == "&":
-        sleep = True
-
-    # os.write(1, ("About to fork (pid:%d)\n" % pid).encode())
     else:
+        if args[0][0] == "/":
+            path = args[0]
+
+        if args[len(args)-1] == "&":
+            sleep = True
+            args = args[:len(args)-1]
+
+        if piping == True:
+            pin, pout = os.pipe()
+            for f in (pin, pout):
+                os.set_inheritable(f, True)
+
         rc = os.fork()
 
         if rc < 0:
-            # os.write(2, ("fork failed, returning %d\n" % rc).encode())
             sys.exit(1)
-        elif rc == 0:                   # child
-            # os.write(1, ("I am child.  My pid==%d.  Parent's pid=%d\n" % (os.getpid(), pid)).encode())
+        elif rc == 0:
+            if piping == True and len(pipeCommands) > 0:
+                os.close(pin)
+                os.dup2(pout, sys.stdout.fileno())
+                os.close(pout)
+
             args2 = []
-            # for i in range(len(args)):
-            #     if args[i] == "|":
-            #         pipe = True
 
             outputFile = ""
             inputFile = ""
-            for i in range(len(args)):
+            i = 0
+            while i < len(args):
                 if args[i] == ">":
                     outputFile = args[i+1]
-                    os.close(1)                 # redirect child's stdout
+                    os.close(1)
                     sys.stdout = open(outputFile, "w")
-                    fd = sys.stdout.fileno() # os.open("p4-output.txt", os.O_CREAT)
+                    fd = sys.stdout.fileno()
                     os.set_inheritable(fd, True)
-                    # os.write(2, ("Child: opened fd=%d for writing\n" % fd).encode())
                     args2 = args[:i]
                 if args[i] == "<":
                     inputFile = args[i+1]
@@ -83,36 +96,43 @@ while(exit == 0):
                     fd = sys.stdin.fileno()
                     os.set_inheritable(fd, True)
                     args2 = args[:i]
-
-            # if piping == True and pipeCounter != len(pipeCommands):
-            #     os.close(1)                 # redirect child's stdout
-            #     sys.stdout = open("pipeOutput.txt", "w")
-            #     fd = sys.stdout.fileno() # os.open("p4-output.txt", os.O_CREAT)
-            #     os.set_inheritable(fd, True)
-
+                    args = args[:i] + args[i+2:]
+                    i = 0
+                i += 1
 
             if len(args2) == 0:
                 args2 = args
 
-            if piping == True and pipeCounter > 1:
-                args2.append("pipeOutput.txt")
-
-
-            for dir in re.split(":", os.environ['PATH']): # try each directory in the path
-                program = "%s/%s" % (dir, args2[0])
-                # os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
+            if len(path) != 0:
+                program = path
                 try:
-                    os.execve(program, args2, os.environ) # try to exec program
-                except FileNotFoundError:             # ...expected
-                    pass                              # ...fail quietly
+                    os.execve(program, args2, os.environ)
+                except FileNotFoundError:
+                    pass
+            else:
+                for dir in re.split(":", os.environ['PATH']):
+                    program = "%s/%s" % (dir, args2[0])
+
+                    try:
+                        os.execve(program, args2, os.environ)
+                    except FileNotFoundError:
+                        pass
 
             os.write(1, ("%s: command not found\n" % args2[0]).encode())
             sys.exit(1)
         elif rc == 2:
             sys.exit(0)
-        else:                           # parent (forked ok)
-            # os.write(1, ("I am parent.  My pid=%d.  Child's pid=%d\n" % (pid, rc)).encode())
+        else:
             if not sleep:
                 childPidCode = os.wait()
-            # os.write(1, ("Parent: Child %d terminated with exit code %d\n" %
-            #              childPidCode).encode())
+
+            if piping == True and len(pipeCommands) > 0:
+                os.close(pout)
+                os.dup2(pin, sys.stdin.fileno())
+                os.close(pin)
+
+            if piping == True and not pipeCommands:
+                piping = False
+                pipeCommands = []
+                os.dup2(tmp_sysin, sys.stdin.fileno())
+                os.dup2(tmp_sysout, sys.stdout.fileno())

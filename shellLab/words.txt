@@ -1,7 +1,0 @@
-apple
-banana
-cucumber
-date
-elderberry
-fig
-grape
