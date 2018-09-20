@@ -2,6 +2,7 @@
 
 This directory contains a working shell that accepts any linux command, input and output redirects, and piping.
 A collaboration report is also included to document any assistance I received when working on this lab.
+Type "exit" or "murder" to exit the shell.
 
 
 
