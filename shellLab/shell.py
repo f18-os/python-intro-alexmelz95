@@ -15,7 +15,7 @@ while(exit == 0):
         command = ""
         prompt = ""
         if 'PS1' in os.environ:
-            prompt = os.environ[('PS1')]
+            prompt = os.environ['PS1']
         else:
             prompt = "prompt>$ "
         while len(command) == 0:
@@ -27,8 +27,8 @@ while(exit == 0):
                 pipeCommands = command.split()
             else:
                 args = command.split()
-            tmp_sysin = os.dup(sys.stdin.fileno())
-            tmp_sysout = os.dup(sys.stdout.fileno())
+            sysin_reset = os.dup(sys.stdin.fileno())
+            sysout_reset = os.dup(sys.stdout.fileno())
 
     if piping == True:
         i = 0
@@ -36,8 +36,6 @@ while(exit == 0):
             args.append(pipeCommands[i])
             i+=1
         pipeCommands = pipeCommands[i+1:]
-
-    pid = os.getpid()
 
     if args[0] == "cd":
         dir = ""
@@ -72,8 +70,9 @@ while(exit == 0):
             sys.exit(1)
         elif rc == 0:
             if piping == True and len(pipeCommands) > 0:
-                os.close(pin)
+                #Check Collaboration Report #1
                 os.dup2(pout, sys.stdout.fileno())
+                os.close(pin)
                 os.close(pout)
 
             args2 = []
@@ -112,27 +111,23 @@ while(exit == 0):
             else:
                 for dir in re.split(":", os.environ['PATH']):
                     program = "%s/%s" % (dir, args2[0])
-
                     try:
                         os.execve(program, args2, os.environ)
                     except FileNotFoundError:
                         pass
-
-            os.write(1, ("%s: command not found\n" % args2[0]).encode())
             sys.exit(1)
-        elif rc == 2:
-            sys.exit(0)
         else:
             if not sleep:
                 childPidCode = os.wait()
 
             if piping == True and len(pipeCommands) > 0:
-                os.close(pout)
+                #Check Collaboration Report #2
                 os.dup2(pin, sys.stdin.fileno())
+                os.close(pout)
                 os.close(pin)
 
             if piping == True and not pipeCommands:
                 piping = False
                 pipeCommands = []
-                os.dup2(tmp_sysin, sys.stdin.fileno())
-                os.dup2(tmp_sysout, sys.stdout.fileno())
+                os.dup2(sysin_reset, sys.stdin.fileno())
+                os.dup2(sysout_reset, sys.stdout.fileno())
