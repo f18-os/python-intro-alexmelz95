@@ -20,7 +20,7 @@ while(exit == 0):
             prompt = "prompt>$ "
         while len(command) == 0:
             command = input(prompt)
-            if command == "murder":
+            if command == "murder" or command == "exit":
                 sys.exit(0)
             if "|" in command:
                 piping = True
