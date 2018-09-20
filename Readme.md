@@ -1,3 +1,12 @@
+-Shell Lab-
+
+This directory contains a working shell that accepts any linux command, input and output redirects, and piping.
+A collaboration report is also included to document any assistance I received when working on this lab.
+
+
+
+-Intro Python Lab-
+
 This repository contains the code for the python introduction lab. The
 purpose is to have a fairly simple python assignment that introduces
 the basic features and tools of python
